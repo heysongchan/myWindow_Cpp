@@ -3,7 +3,8 @@
 
 #include "stdafx.h"
 #include "MyWindow.h"
-
+#include <CommCtrl.h>
+#pragma comment(lib,"Comctl32.lib");
 #define MAX_LOADSTRING 100
 
 // 全局变量: 
@@ -76,11 +77,30 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MYWINDOW));
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
-	wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_MYWINDOW);
+	wcex.lpszMenuName = MAKEINTRESOURCE(IDC_MYWINDOW);
 	wcex.lpszClassName	= szWindowClass;
 	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+	ATOM ret=RegisterClassEx(&wcex);
+	//child win
 
-	return RegisterClassEx(&wcex);
+	WNDCLASSEX wcex1;
+	wcex1.cbSize = sizeof(WNDCLASSEX);
+
+	wcex1.style = CS_HREDRAW | CS_VREDRAW;
+	wcex1.lpfnWndProc = NULL;
+	wcex1.cbClsExtra = 0;
+	wcex1.cbWndExtra = 0;
+	wcex1.hInstance = hInstance;
+	wcex1.hIcon = NULL;
+	wcex1.hCursor = NULL;
+	wcex1.hbrBackground = (HBRUSH)(COLOR_MENUTEXT);
+	wcex1.lpszMenuName = NULL;
+	wcex1.lpszClassName = L"child";
+	wcex1.hIconSm = NULL;
+	RegisterClassEx(&wcex1);
+
+
+	return ret;
 }
 
 //
@@ -96,12 +116,24 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    HWND hWnd;
+   HWND hWnd1=NULL;
 
    hInst = hInstance; // 将实例句柄存储在全局变量中
 
-   hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
+   hWnd = CreateWindowEx(0,szWindowClass, szTitle, 
+	   WS_OVERLAPPEDWINDOW,
+	   0, 0, 1111, 1111, NULL, NULL, hInstance, NULL);
 
+   //child
+   INITCOMMONCONTROLSEX picce;
+   InitCommonControlsEx(&picce);
+   hWnd1 = CreateWindowEx(0, WC_TREEVIEW, L"ee",
+	   WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES,
+	   0, 0, 211, 210, hWnd, NULL, hInstance, NULL);
+   
+  
+
+ 
    if (!hWnd)
    {
       return FALSE;
@@ -109,6 +141,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
+   ShowWindow(hWnd1, nCmdShow);
+   UpdateWindow(hWnd1);
 
    return TRUE;
 }

@@ -3,3 +3,5 @@ MyWindow/Debug/
 *.opensdf
 *.sdf
 ipch/
+*.suo
+*.aps
