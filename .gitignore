@@ -1,0 +1,5 @@
+Debug/
+MyWindow/Debug/
+*.opensdf
+*.sdf
+ipch/
