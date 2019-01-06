@@ -17,6 +17,7 @@ ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, HTREEITEM hParent, BOOL bFolder);
 
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -116,7 +117,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    HWND hWnd;
-   HWND hWnd1=NULL;
+   HWND hWndTv=NULL;
 
    hInst = hInstance; // 将实例句柄存储在全局变量中
 
@@ -127,11 +128,15 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    //child
    INITCOMMONCONTROLSEX picce;
    InitCommonControlsEx(&picce);
-   hWnd1 = CreateWindowEx(0, WC_TREEVIEW, L"ee",
+   hWndTv = CreateWindowEx(0, WC_TREEVIEW, L"ee",
 	   WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES,
-	   0, 0, 211, 210, hWnd, NULL, hInstance, NULL);
+	   30, 30, 211, 210, hWnd, NULL, hInstance, NULL);
+   //
    
-  
+   //add item
+   HTREEITEM root=AddItemToTree(hWndTv, L"root", NULL, true);
+   AddItemToTree(hWndTv, L"aaa", root, false);
+   TreeView_Expand(hWndTv, root, TVE_EXPAND); 
 
  
    if (!hWnd)
@@ -141,8 +146,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
-   ShowWindow(hWnd1, nCmdShow);
-   UpdateWindow(hWnd1);
+
 
    return TRUE;
 }
@@ -213,4 +217,39 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	return (INT_PTR)FALSE;
+}
+
+
+HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, HTREEITEM hParent, BOOL bFolder)
+{
+	HTREEITEM hme;
+	TVITEM tvi, tParent;
+	TVINSERTSTRUCT tvins;
+	tvi.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
+	tvi.pszText = lpszItem;
+	tvi.cchTextMax = sizeof(tvi.pszText) / sizeof(tvi.pszText[0]);
+	if (bFolder)
+	{
+		tvi.iImage = 1;
+		tvi.iSelectedImage = 2;
+		tvi.cChildren = I_CHILDRENCALLBACK;
+	}
+	else
+	{
+		tvi.iImage = 3;
+		tvi.iSelectedImage = 3;
+		tvi.cChildren = 0;
+	}
+	tvins.item = tvi;
+	tvins.hInsertAfter = TVI_SORT;
+	if (hParent == NULL)
+	{
+		tvins.hParent = TVI_ROOT;
+	}
+	else
+	{
+		tvins.hParent = hParent;
+	}
+	hme = TreeView_InsertItem(hwndTV, &tvins);
+	return hme;
 }
